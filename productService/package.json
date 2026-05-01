@@ -1,0 +1,34 @@
+{
+  "name": "product_service",
+  "version": "0.1.0",
+  "bin": {
+    "product_service": "bin/product_service.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "test": "jest",
+    "cdk": "cdk",
+    "build:layer": "webpack --config webpack.layer.js",
+    "build:all": "npm run build && npm run build:layer"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.161",
+    "@types/jest": "^30",
+    "@types/node": "^24.10.1",
+    "aws-cdk": "2.1119.0",
+    "jest": "^30",
+    "ts-jest": "^29",
+    "ts-loader": "^9.5.7",
+    "ts-node": "^10.9.2",
+    "typescript": "~5.9.3",
+    "webpack": "^5.106.2",
+    "webpack-cli": "^7.0.2"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "^2.248.0",
+    "aws-lambda": "^1.0.7",
+    "constructs": "^10.5.0",
+    "uuid": "^14.0.0"
+  }
+}
