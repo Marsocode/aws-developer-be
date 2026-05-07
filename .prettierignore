@@ -1,0 +1,12 @@
+dist
+coverage
+build
+node_modules
+**/node_modules
+
+productService/dist
+productService/build
+
+*.json
+**/*.json
+*.md

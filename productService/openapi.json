@@ -3,11 +3,11 @@
   "info": {
     "title": "Product Service API",
     "version": "1.0.0",
-    "description": "API for retrieving products"
+    "description": "API for retrieving and creating products"
   },
   "servers": [
     {
-      "url": "https://h13ajex47i.execute-api.us-east-1.amazonaws.com/dev"
+      "url": "https://h13ajex47i.execute-api.us-east-1.amazonaws.com/dev/"
     }
   ],
   "paths": {
@@ -25,6 +25,52 @@
                   "items": {
                     "$ref": "#/components/schemas/Product"
                   }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a product",
+        "operationId": "createProduct",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProduct"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Product created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
                 }
               }
             }
@@ -89,7 +135,7 @@
         "properties": {
           "id": {
             "type": "string",
-            "example": "1"
+            "example": "19ba3d6a-f8ed-491b-a192-0a33b71b38c4"
           },
           "title": {
             "type": "string",
@@ -103,11 +149,42 @@
             "type": "number",
             "example": 120
           },
+          "count": {
+            "type": "number",
+            "example": 5
+          },
           "image": {
             "type": "string",
             "example": "https://picsum.photos/id/1011/200/300"
           }
-        }
+        },
+        "required": ["id", "title", "price", "count"]
+      },
+      "CreateProduct": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "Vintage Camera"
+          },
+          "description": {
+            "type": "string",
+            "example": "Classic film camera"
+          },
+          "price": {
+            "type": "number",
+            "example": 120
+          },
+          "count": {
+            "type": "number",
+            "example": 5
+          },
+          "image": {
+            "type": "string",
+            "example": ""
+          }
+        },
+        "required": ["title", "price", "count"]
       },
       "Error": {
         "type": "object",
