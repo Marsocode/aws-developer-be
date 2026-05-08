@@ -76,8 +76,28 @@ export class ProductServiceStack extends cdk.Stack {
       value: productsApi.url,
     });
 
-    const productsTable = dynamoDb.Table.fromTableName(this, TABLES.PRODUCTS, TABLES.PRODUCTS);
+    /*
+    * Below is the code for DynamoDB tables initialization through aws-cdk. 
+      But Tables for this task were created using @aws-sdk/client-dynamodb API (see dynamoClient.ts file) in educational purposes
+    */
+    // const productsTable = new dynamoDb.Table(this, "ProductsTable", {
+    //   tableName: "products",
+    //   partitionKey: { name: "id", type: dynamoDb.AttributeType.STRING },
+    //   billingMode: dynamoDb.BillingMode.PAY_PER_REQUEST,
+    //   removalPolicy: cdk.RemovalPolicy.DESTROY,
+    // });
 
+    // const stocksTable = new dynamoDb.Table(this, "StocksTable", {
+    //   tableName: "stocks",
+    //   partitionKey: { name: "product_id", type: dynamoDb.AttributeType.STRING },
+    //   billingMode: dynamoDb.BillingMode.PAY_PER_REQUEST,
+    //   removalPolicy: cdk.RemovalPolicy.DESTROY,
+    // });
+
+    /*
+     *  Describe already created Products and Stocks tables and grand access to Lambda Functions
+     */
+    const productsTable = dynamoDb.Table.fromTableName(this, TABLES.PRODUCTS, TABLES.PRODUCTS);
     const stocksTable = dynamoDb.Table.fromTableName(this, TABLES.STOCKS, TABLES.STOCKS);
 
     productsTable.grantReadData(getProductsListFunction);
