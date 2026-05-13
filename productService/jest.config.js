@@ -3,10 +3,10 @@ module.exports = {
   roots: ['<rootDir>/test'],
   testMatch: ['**/*.test.ts'],
   transform: {
-    '^.+\\.tsx?$': 'ts-jest'
+    '^.+\\.tsx?$': 'ts-jest',
   },
   setupFilesAfterEnv: ['aws-cdk-lib/testhelpers/jest-autoclean'],
   moduleNameMapper: {
-    '^/opt/nodejs/(.*)$': '<rootDir>/common/nodejs/$1'
+    '^/opt/nodejs/(.*)$': '<rootDir>/common/nodejs/$1',
   },
 };

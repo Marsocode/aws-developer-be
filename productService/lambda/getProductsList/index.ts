@@ -1,14 +1,27 @@
 import { APIGatewayProxyEventV2 } from 'aws-lambda';
 
-import { products } from '/opt/nodejs/products';
-import { updateHeaders } from '/opt/nodejs/updateHeaders';
+import { getProductsList, updateHeaders, getErrorMessage } from '/opt/nodejs/index';
 
 export const handler = async (event: APIGatewayProxyEventV2) => {
   const { headers } = event;
 
-  return {
-    statusCode: 200,
-    headers: updateHeaders(headers),
-    body: JSON.stringify(products),
-  };
-}
+  console.log('getProductsList Incoming event:', JSON.stringify(event));
+
+  try {
+    const products = await getProductsList();
+
+    return {
+      statusCode: 200,
+      headers: updateHeaders(headers),
+      body: JSON.stringify(products),
+    };
+  } catch (error) {
+    return {
+      statusCode: 500,
+      headers: updateHeaders(headers),
+      body: JSON.stringify({
+        message: getErrorMessage(error),
+      }),
+    };
+  }
+};

@@ -2,19 +2,21 @@
 
 ## Product Service API
 
-A simple serverless backend built with AWS Lambda and API Gateway that provides products data via REST endpoints.
+A simple serverless backend built with AWS Lambda and API Gateway and DynamoDB that provides products data via REST endpoints.
 
 ### Endpoints
 
 - Get list of products
 - Get product by ID
+- Create a product
 
 ### Features
 
 - Serverless architecture (AWS Lambda)
 - API Gateway integration
+- DynamoDB for storing entities
 - Shared code via Lambda Layers
-- Lambdas are Unit tested with Jest
+- Lambda functions are Unit tested with Jest
 
 ## Useful commands
 
