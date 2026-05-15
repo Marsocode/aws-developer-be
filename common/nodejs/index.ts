@@ -3,3 +3,6 @@ export * from './helpers/updateHeaders';
 export * from './helpers/errorHandling';
 export * from './constants';
 export * from './services/dataService/dataService';
+export * from './libs/dynamoClient';
+export * from './libs/s3Client';
+export * from './helpers/csvParse';

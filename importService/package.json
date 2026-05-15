@@ -1,8 +1,8 @@
 {
-  "name": "product_service",
+  "name": "import_service",
   "version": "0.1.0",
   "bin": {
-    "product_service": "bin/product_service.js"
+    "import_service": "bin/import_service.js"
   },
   "scripts": {
     "build": "tsc",
@@ -17,18 +17,16 @@
     "aws-cdk": "2.1119.0",
     "jest": "^30",
     "ts-jest": "^29",
-    "ts-loader": "^9.5.7",
     "ts-node": "^10.9.2",
-    "typescript": "~5.9.3",
-    "webpack": "^5.106.2",
-    "webpack-cli": "^7.0.2"
+    "typescript": "~5.9.3"
   },
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.1044.0",
-    "@aws-sdk/lib-dynamodb": "^3.1044.0",
+    "@aws-sdk/client-s3": "^3.1045.0",
+    "@aws-sdk/s3-request-presigner": "^3.1046.0",
     "aws-cdk-lib": "^2.248.0",
     "aws-lambda": "^1.0.7",
     "constructs": "^10.5.0",
-    "uuid": "^14.0.0"
+    "csv-parser": "^3.2.1",
+    "dotenv": "^17.4.2"
   }
 }

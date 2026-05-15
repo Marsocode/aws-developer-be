@@ -1,16 +1,17 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "Product Service API",
+    "title": "NodeJsAWSShop API",
     "version": "1.0.0",
-    "description": "API for retrieving and creating products"
-  },
-  "servers": [
-    {
-      "url": "https://h13ajex47i.execute-api.us-east-1.amazonaws.com/dev/"
-    }
-  ],
+    "description": "API for retrieving, creating and importing products"
+  }, 
   "paths": {
+    "servers": [
+      {
+        "url": "https://h13ajex47i.execute-api.us-east-1.amazonaws.com/dev",
+        "description": "Product Service"
+      }
+    ],
     "/products": {
       "get": {
         "summary": "Get all products",
@@ -126,7 +127,65 @@
           }
         }
       }
+    },
+  "/import": {
+    "servers": [
+      {
+        "url": " https://ly92y3u86b.execute-api.us-east-1.amazonaws.com/dev",
+        "description": "Import Service"
+      }
+    ],
+    "get": {
+      "summary": "Generate signed URL for CSV product import",
+      "description": "Returns a signed S3 URL for uploading a CSV file to the uploaded folder.",
+      "operationId": "importProductsFile",
+      "parameters": [
+        {
+          "name": "name",
+          "in": "query",
+          "required": true,
+          "description": "CSV file name to upload.",
+          "schema": {
+            "type": "string",
+            "example": "products.csv"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Signed URL generated successfully",
+          "content": {
+            "text/plain": {
+              "schema": {
+                "type": "string",
+                "example": "https://bucket-name.s3.amazonaws.com/uploaded/products.csv?X-Amz-Algorithm=AWS4-HMAC-SHA256..."
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "File name is missing",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "Internal server error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Error"
+              }
+            }
+          }
+        }
+      }
     }
+  } 
   },
   "components": {
     "schemas": {
