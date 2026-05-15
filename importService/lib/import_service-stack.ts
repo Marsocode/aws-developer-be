@@ -1,0 +1,100 @@
+import * as cdk from 'aws-cdk-lib';
+import { Code, Function, Runtime, LayerVersion } from 'aws-cdk-lib/aws-lambda';
+import * as apigateway from 'aws-cdk-lib/aws-apigateway';
+import * as s3 from 'aws-cdk-lib/aws-s3';
+import * as s3Notifications from 'aws-cdk-lib/aws-s3-notifications';
+import { Construct } from 'constructs';
+import 'dotenv/config';
+
+export class ImportServiceStack extends cdk.Stack {
+  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+    super(scope, id, props);
+
+    const importBucketName = process.env.IMPORT_BUCKET_NAME;
+
+    if (!importBucketName) {
+      throw new Error('IMPORT_BUCKET_NAME is not defined');
+    }
+
+    const bucket = new s3.Bucket(this, 'ImportBucket', {
+      bucketName: `${importBucketName}-${this.account}-${this.region}`,
+      cors: [
+        {
+          allowedMethods: [s3.HttpMethods.GET, s3.HttpMethods.PUT],
+          allowedOrigins: ['*'],
+          allowedHeaders: ['*'],
+        },
+      ],
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+    });
+
+    const commonLayer = new LayerVersion(this, 'CommonLayer', {
+      code: Code.fromAsset('../common/dist'),
+      compatibleRuntimes: [Runtime.NODEJS_22_X],
+      description: 'Shared common code',
+    });
+
+    const importProductsFile = new Function(
+      this,
+      `importProductsFile-${cdk.Stack.of(this).account}-${cdk.Stack.of(this).region}`,
+      {
+        runtime: Runtime.NODEJS_22_X,
+        handler: 'index.handler',
+        code: Code.fromAsset('lambda/importProductsFile'),
+        layers: [commonLayer],
+        environment: {
+          BUCKET_NAME: bucket.bucketName,
+        },
+      }
+    );
+
+    const importFileParser = new Function(
+      this,
+      `importFileParser-${cdk.Stack.of(this).account}-${cdk.Stack.of(this).region}`,
+      {
+        runtime: Runtime.NODEJS_22_X,
+        handler: 'index.handler',
+        code: Code.fromAsset('lambda/importFileParser'),
+        layers: [commonLayer],
+        environment: {
+          BUCKET_NAME: bucket.bucketName,
+        },
+      }
+    );
+
+    bucket.grantReadWrite(importProductsFile);
+    bucket.grantReadWrite(importFileParser);
+
+    bucket.addEventNotification(s3.EventType.OBJECT_CREATED, new s3Notifications.LambdaDestination(importFileParser), {
+      prefix: 'uploaded/',
+    });
+
+    const importApi = new apigateway.RestApi(
+      this,
+      `ImportApi-${cdk.Stack.of(this).account}-${cdk.Stack.of(this).region}`,
+      {
+        deployOptions: {
+          stageName: 'dev',
+        },
+        defaultCorsPreflightOptions: {
+          allowOrigins: apigateway.Cors.ALL_ORIGINS,
+          allowMethods: apigateway.Cors.ALL_METHODS,
+        },
+      }
+    );
+
+    // GET /import
+    const importResource = importApi.root.addResource('import');
+    importResource.addMethod('GET', new apigateway.LambdaIntegration(importProductsFile), {
+      requestParameters: {
+        'method.request.querystring.name': true,
+      },
+    });
+
+    new cdk.CfnOutput(this, 'ImportApiUrl', {
+      value: importApi.url,
+    });
+  }
+}
