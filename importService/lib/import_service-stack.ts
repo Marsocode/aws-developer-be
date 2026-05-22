@@ -2,6 +2,8 @@ import * as cdk from 'aws-cdk-lib';
 import { Code, Function, Runtime, LayerVersion } from 'aws-cdk-lib/aws-lambda';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import * as s3 from 'aws-cdk-lib/aws-s3';
+import * as iam from 'aws-cdk-lib/aws-iam';
+import * as sqs from 'aws-cdk-lib/aws-sqs';
 import * as s3Notifications from 'aws-cdk-lib/aws-s3-notifications';
 import { Construct } from 'constructs';
 import 'dotenv/config';
@@ -15,6 +17,11 @@ export class ImportServiceStack extends cdk.Stack {
     if (!importBucketName) {
       throw new Error('IMPORT_BUCKET_NAME is not defined');
     }
+
+    const catalogItemsQueueUrl = cdk.Fn.importValue('CatalogItemsQueueUrl');
+    const catalogItemsQueueArn = cdk.Fn.importValue('CatalogItemsQueueArn');
+
+    const catalogItemsQueue = sqs.Queue.fromQueueArn(this, 'ImportedCatalogItemsQueue', catalogItemsQueueArn);
 
     const bucket = new s3.Bucket(this, 'ImportBucket', {
       bucketName: `${importBucketName}-${this.account}-${this.region}`,
@@ -60,9 +67,20 @@ export class ImportServiceStack extends cdk.Stack {
         layers: [commonLayer],
         environment: {
           BUCKET_NAME: bucket.bucketName,
+          CATALOG_ITEMS_QUEUE_URL: catalogItemsQueueUrl || process.env.CATALOG_ITEMS_QUEUE_URL!,
         },
       }
     );
+
+    catalogItemsQueue.grantSendMessages(importFileParser);
+
+    // // to process products items in SQS queue
+    // importFileParser.addToRolePolicy(
+    //   new iam.PolicyStatement({
+    //     actions: ['sqs:SendMessage'],
+    //     resources: [process.env.CATALOG_ITEMS_QUEUE_ARN!],
+    //   })
+    // );
 
     bucket.grantReadWrite(importProductsFile);
     bucket.grantReadWrite(importFileParser);
