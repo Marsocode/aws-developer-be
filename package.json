@@ -1,9 +1,26 @@
 {
   "scripts": {
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "build:common": "webpack --config common/webpack.layer.ts",
+    "build:product": "webpack --config productService/webpack.config.ts",
+    "build:import": "webpack --config importService/webpack.config.ts",
+    "build": "npm run build:common && npm run build:product && npm run build:import"
   },
   "devDependencies": {
-    "prettier": "^3.8.3"
+    "@types/node": "^25.7.0",
+    "@types/uuid": "^8.3.4",
+    "prettier": "^3.8.3",
+    "ts-loader": "^9.5.7",
+    "webpack": "^5.106.2",
+    "webpack-cli": "^7.0.2"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.1046.0",
+    "@aws-sdk/client-s3": "^3.1046.0",
+    "@aws-sdk/lib-dynamodb": "^3.1046.0",
+    "@aws-sdk/s3-request-presigner": "^3.1046.0",
+    "csv-parser": "^3.2.1",
+    "uuid": "^8.3.2"
   }
 }

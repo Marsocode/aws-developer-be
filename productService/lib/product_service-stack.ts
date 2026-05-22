@@ -4,14 +4,14 @@ import { Code, Function, Runtime, LayerVersion } from 'aws-cdk-lib/aws-lambda';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import * as dynamoDb from 'aws-cdk-lib/aws-dynamodb';
 import * as path from 'path';
-import { allowedOrigins, TABLES } from '../common/nodejs/constants';
+import { allowedOrigins, TABLES } from '../../common/nodejs/index';
 
 export class ProductServiceStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
     const commonLayer = new LayerVersion(this, 'CommonLayer', {
-      code: Code.fromAsset(path.resolve('dist/layer')),
+      code: Code.fromAsset('../common/dist'),
       compatibleRuntimes: [Runtime.NODEJS_22_X],
       description: 'Shared common code',
     });
