@@ -74,14 +74,6 @@ export class ImportServiceStack extends cdk.Stack {
 
     catalogItemsQueue.grantSendMessages(importFileParser);
 
-    // // to process products items in SQS queue
-    // importFileParser.addToRolePolicy(
-    //   new iam.PolicyStatement({
-    //     actions: ['sqs:SendMessage'],
-    //     resources: [process.env.CATALOG_ITEMS_QUEUE_ARN!],
-    //   })
-    // );
-
     bucket.grantReadWrite(importProductsFile);
     bucket.grantReadWrite(importFileParser);
 

@@ -7,11 +7,9 @@ export const parseCsvStream = async (stream: NodeJS.ReadableStream): Promise<Rec
     stream
       .pipe(csv())
       .on('data', (data) => {
-        console.log('CSV record:', data);
         records.push(data);
       })
       .on('end', () => {
-        console.log('CSV parsing finished');
         resolve();
       })
       .on('error', reject);
