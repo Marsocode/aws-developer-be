@@ -4,11 +4,14 @@
     "format:check": "prettier --check .",
     "build:common": "webpack --config common/webpack.layer.ts",
     "build:product": "webpack --config productService/webpack.config.ts",
+    "build:authorizer": "webpack --config authorizationService/webpack.config.ts",
     "build:import": "webpack --config importService/webpack.config.ts",
-    "build": "npm run build:common && npm run build:product && npm run build:import"
+    "build": "npm run build:common && npm run build:product && npm run build:authorizer && npm run build:import"
   },
   "devDependencies": {
-    "@types/node": "^25.7.0",
+    "@types/aws-lambda": "^8.10.161",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^25.9.1",
     "@types/uuid": "^8.3.4",
     "prettier": "^3.8.3",
     "ts-loader": "^9.5.7",
