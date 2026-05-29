@@ -1,10 +1,23 @@
 import { S3Handler, S3Event } from 'aws-lambda';
-import { s3GetObject, s3CopyObject, s3DeleteObject, getErrorMessage, parseCsvStream } from '/opt/nodejs/index';
+import {
+  s3GetObject,
+  s3CopyObject,
+  s3DeleteObject,
+  getErrorMessage,
+  parseCsvStream,
+  sendMessageToQueue,
+} from '/opt/nodejs/index';
 
 const PARSED_PREFIX = 'parsed';
 
 export const handler: S3Handler = async (event: S3Event) => {
   try {
+    const queueUrl = process.env.CATALOG_ITEMS_QUEUE_URL;
+
+    if (!queueUrl) {
+      throw new Error('CATALOG_ITEMS_QUEUE_URL is not defined');
+    }
+
     for (const record of event.Records) {
       const bucketName = record.s3.bucket.name;
       const objectKey = decodeURIComponent(record.s3.object.key.replace(/\+/g, ' '));
@@ -13,7 +26,12 @@ export const handler: S3Handler = async (event: S3Event) => {
 
       const stream = response.Body as NodeJS.ReadableStream;
 
-      await parseCsvStream(stream);
+      const parsedRecords = await parseCsvStream(stream);
+
+      for (const record of parsedRecords) {
+        await sendMessageToQueue(queueUrl, record);
+        console.log('Record successfully sent to SQS');
+      }
 
       const parsedKey = objectKey.replace(/^uploaded\//, `${PARSED_PREFIX}/`);
 

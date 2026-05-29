@@ -5,4 +5,6 @@ export * from './constants';
 export * from './services/dataService/dataService';
 export * from './libs/dynamoClient';
 export * from './libs/s3Client';
+export * from './libs/sqsClient';
+export * from './libs/snsClient';
 export * from './helpers/csvParse';

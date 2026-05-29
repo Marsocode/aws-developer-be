@@ -9,6 +9,7 @@ module.exports = {
     getProductsList: path.resolve(__dirname, 'lambda/getProductsList/index.ts'),
     getProductById: path.resolve(__dirname, 'lambda/getProductsById/index.ts'),
     createProduct: path.resolve(__dirname, 'lambda/createProduct/index.ts'),
+    catalogBatchProcess: path.resolve(__dirname, 'lambda/catalogBatchProcess/index.ts'),
   },
 
   output: {

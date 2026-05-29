@@ -1,10 +1,16 @@
+import 'dotenv/config';
 import * as cdk from 'aws-cdk-lib/core';
 import { Construct } from 'constructs';
 import { Code, Function, Runtime, LayerVersion } from 'aws-cdk-lib/aws-lambda';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import * as dynamoDb from 'aws-cdk-lib/aws-dynamodb';
+import * as sqs from 'aws-cdk-lib/aws-sqs';
+import * as sns from 'aws-cdk-lib/aws-sns';
+import * as lambdaEventSources from 'aws-cdk-lib/aws-lambda-event-sources';
+import * as subscriptions from 'aws-cdk-lib/aws-sns-subscriptions';
 import * as path from 'path';
 import { allowedOrigins, TABLES } from '../../common/nodejs/index';
+import { CatalogQueueConstruct } from './catalog_queue-stack';
 
 export class ProductServiceStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -45,6 +51,17 @@ export class ProductServiceStack extends cdk.Stack {
         runtime: Runtime.NODEJS_22_X,
         handler: 'index.handler',
         code: Code.fromAsset(path.resolve('lambda/createProduct')),
+        layers: [commonLayer],
+      }
+    );
+
+    const catalogBatchProcessFunction = new Function(
+      this,
+      `catalogBatchProcess-${cdk.Stack.of(this).account}-${cdk.Stack.of(this).region}`,
+      {
+        runtime: Runtime.NODEJS_22_X,
+        handler: 'index.handler',
+        code: Code.fromAsset(path.resolve('lambda/catalogBatchProcess')),
         layers: [commonLayer],
       }
     );
@@ -111,5 +128,67 @@ export class ProductServiceStack extends cdk.Stack {
     stocksTable.grantReadData(getProductsByIdFunction);
 
     stocksTable.grantReadWriteData(createProductFunction);
+
+    productsTable.grantWriteData(catalogBatchProcessFunction);
+    stocksTable.grantWriteData(catalogBatchProcessFunction);
+
+    // SQS Queue
+    const queueConstruct = new CatalogQueueConstruct(this, 'CatalogItemsQueues');
+
+    catalogBatchProcessFunction.addEventSource(
+      new lambdaEventSources.SqsEventSource(queueConstruct.catalogItemsQueue, {
+        batchSize: 5,
+      })
+    );
+
+    new cdk.CfnOutput(this, 'CatalogItemsQueueUrl', {
+      value: queueConstruct.catalogItemsQueue.queueUrl,
+      exportName: 'CatalogItemsQueueUrl',
+    });
+
+    new cdk.CfnOutput(this, 'CatalogItemsQueueArn', {
+      value: queueConstruct.catalogItemsQueue.queueArn,
+      exportName: 'CatalogItemsQueueArn',
+    });
+
+    const emailWithImage = process.env.SUBSCRIPTION_EMAIL_BASIC;
+    const emailWithoutImage = process.env.SUBSCRIPTION_EMAIL_WITHOUT_IMAGE;
+
+    if (!emailWithImage) {
+      throw new Error('SUBSCRIPTION_EMAIL_BASIC is not defined');
+    }
+
+    if (!emailWithoutImage) {
+      throw new Error('SUBSCRIPTION_EMAIL_WITHOUT_IMAGE is not defined');
+    }
+
+    // SNS Topic
+    const createProductTopic = new sns.Topic(this, 'CreateProductTopic', {
+      topicName: `createProductTopic-${cdk.Stack.of(this).account}-${cdk.Stack.of(this).region}`,
+    });
+
+    createProductTopic.addSubscription(
+      new subscriptions.EmailSubscription(emailWithImage, {
+        filterPolicy: {
+          hasImage: sns.SubscriptionFilter.stringFilter({
+            allowlist: ['true'],
+          }),
+        },
+      })
+    );
+
+    createProductTopic.addSubscription(
+      new subscriptions.EmailSubscription(emailWithoutImage, {
+        filterPolicy: {
+          hasImage: sns.SubscriptionFilter.stringFilter({
+            allowlist: ['false'],
+          }),
+        },
+      })
+    );
+
+    catalogBatchProcessFunction.addEnvironment('CREATE_PRODUCT_TOPIC_ARN', createProductTopic.topicArn);
+
+    createProductTopic.grantPublish(catalogBatchProcessFunction);
   }
 }
