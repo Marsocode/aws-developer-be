@@ -11,6 +11,7 @@
     "lib": [
       "es2022"
     ],
+    "types": ["node", "jest", "aws-lambda"],
     "declaration": true,
     "strict": true,
     "noImplicitAny": true,
@@ -26,11 +27,12 @@
     "experimentalDecorators": true,
     "strictPropertyInitialization": false,
     "skipLibCheck": true,
-    "types": ["node", "jest", "aws-lambda"],
+    "typeRoots": [
+      "./node_modules/@types"
+    ],
   },
   "exclude": [
     "node_modules",
-    "cdk.out",
-    "dist"
+    "cdk.out"
   ]
 }
